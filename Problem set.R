@@ -1,9 +1,14 @@
-rm(list = ls())
-
+install.packages(c("readxl","tidyverse", "ggplot2", "remotes", "stargazer", "foreign"))
+library(readxl)
+library(tidyverse)
+library(ggplot2)
+library(remotes)
+library(haven)
 library(foreign)
 library(stargazer)
 library(haven)
 library(tidyverse)
+install.packages("finalfit")
 library(finalfit)
 
 data = read_dta("data_ps4.dta")
@@ -16,6 +21,7 @@ summary(data)
 #Let's observe how NAs match inside the dataset
 table(is.na(data$lwage1), is.na(data$nonemp)) #All nonemp NAs are also lwage1 NAs
 table(is.na(data$lwage1), is.na(data$lwage0)) #Not all lwage0 NAs are also lwage1 NAs
+
 
 #Observing if lwage1 NAs (the most numerous) are distributed uniformely across the dataset
 
@@ -47,23 +53,35 @@ Var=sqrt(var(data[is.na(data$lwage1),]$jobfind, na.rm=T)+var(data[!is.na(data$lw
 
 data = subset(data, !is.na(data$lwage1))
 summary(data)
-
 remotes::install_github('bquast/rddtools')
 install.packages("rddtools")
 vignette('rddtools')
 View(data)
 #trial <- rdd_data(y=rdd_data$age, x=rdd_data$, cutpoint=0)
-A <- ggplot(data, aes(x = age)) +
+data$binedage<-cut(data$age_month, seq(min(data$age_month),max(data$age_month), 4))
+View(data)
+A <- ggplot(data, aes(x = age_month)) +
   geom_density()
 A
-A + geom_vline(aes(xintercept = mean(age)), 
+A + geom_vline(aes(xintercept = mean(age_month)), 
                color = "red", linetype = "dashed", size = 1)
 data$binedage<-cut(data$age_month, seq(min(data$age_month),max(data$age_month), 4))
 View(data)
-B<- ggplot(data, aes(x=binedage,
-                     y = lwage0)) +
-  geom
+B <- data%>% 
+  group_by(binedage) %>% 
+  mutate(Mean_lwage0 = mean(lwage0, na.rm = T)) %>%
+  ggplot(aes(x=age_month, y = Mean_lwage0)) + 
+  geom_point(shape = 1, alpha = 0.5) + 
+  geom_vline(aes(xintercept = 480), color = "blue" , linetype = "dashed", size =1) 
+B 
+install.packages("rddensity")
+library(rddensity)
 
+install.packages("rdrobust")
+library(rdrobust)
+
+a<- rdplot(data$lwage0, data$age_month, p = 2, c = (480), binselect = "es")
+summary(a)
 #without bin size B
 B<- ggplot(data, aes(x =age,
                      y = lwage0)) +
@@ -80,15 +98,10 @@ install.packages("binsreg")
 library(binsreg)
 
 #B plot 2
-binscatter1<-binsreg(rdd_data$lwage0, rdd_data$age, dotsgrid = 4, polyreg=2)
-binscatter1$bins_plot + geom_vline (xintercept = 39, colour = "red" ) + xlab("Age") + ylab("Log of wages at layoff")
+binscatter1<-binsreg(data$lwage0, data$age_month)
+binscatter1$bins_plot + geom_vline (xintercept = 39, colour = "red" ) + xlab("Age in months") + ylab("Log of wages at layoff")
 ggtitle("Plot of age vs wages at layoff") + 
   theme(plot.title = element_text(hjust = 0.3, vjust = 0.3, face = 'italic')) +
   theme(element_line(margin(t = 3, r = 3, b = 3, l = 3, unit = "pt")))
-
-install.packages("rdrobust")
-library(rdrobust)
-a<- rdplot(data$binedage, data$lwage0, nbins = data$binedage, binselect = "espr")
-summary(a)
 
 

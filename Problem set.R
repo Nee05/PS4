@@ -54,6 +54,7 @@ Var=sqrt(var(data[is.na(data$lwage1),]$jobfind, na.rm=T)+var(data[!is.na(data$lw
 data = subset(data, !is.na(data$lwage1))
 summary(data)
 remotes::install_github('bquast/rddtools')
+
 install.packages("rddtools")
 vignette('rddtools')
 View(data)
@@ -92,16 +93,18 @@ B
 B + geom_vline(aes(xintercept = mean(age)), 
                color = "red", linetype = "dashed", size = 1)
 
-data$age_month = data$age*12
+plot1<- rddensity(data$age_month, c = 480, p = 2, q = p+1,
+                  fitselect = "restricted", vce = "plugin", massPoints = TRUE,
+                  bino = TRUE)
 
-install.packages("binsreg")
-library(binsreg)
+#install.packages("binsreg")
+#library(binsreg)
 
 #B plot 2
-binscatter1<-binsreg(data$lwage0, data$age_month)
-binscatter1$bins_plot + geom_vline (xintercept = 39, colour = "red" ) + xlab("Age in months") + ylab("Log of wages at layoff")
-ggtitle("Plot of age vs wages at layoff") + 
-  theme(plot.title = element_text(hjust = 0.3, vjust = 0.3, face = 'italic')) +
-  theme(element_line(margin(t = 3, r = 3, b = 3, l = 3, unit = "pt")))
+#binscatter1<-binsreg(data$lwage0, data$age_month)
+#binscatter1$bins_plot + geom_vline (xintercept = 39, colour = "red" ) + xlab("Age in months") + ylab("Log of wages at layoff")
+#ggtitle("Plot of age vs wages at layoff") + 
+  #theme(plot.title = element_text(hjust = 0.3, vjust = 0.3, face = 'italic')) +
+  #theme(element_line(margin(t = 3, r = 3, b = 3, l = 3, unit = "pt")))
 
 
